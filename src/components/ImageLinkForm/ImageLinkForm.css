@@ -12,6 +12,7 @@
 
 .form button{
     min-width: 120px;
+    background-color: #4d88ff;
 }
 
 @media only screen and (max-width: 45em) {
