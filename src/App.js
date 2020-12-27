@@ -8,11 +8,7 @@ import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 import Particles from 'react-particles-js';
-import Clarifai from 'clarifai';
-
-const app = new Clarifai.App({
-  apiKey: process.env.REACT_APP_CLARIFAI_API
- });
+// import Clarifai from 'clarifai'; //Moved to backend
 
 const particlesOptions = {
   particles: {
@@ -26,31 +22,26 @@ const particlesOptions = {
   }
 }
 
+const initialState = {
+  input: '',
+  imageURL: '',
+  faceBox: {},
+  route: 'signin',
+  isSignedIn: false,
+  user: {
+    id: '',
+    name: '',
+    email: '',
+    entries: 0,
+    joined: ''
+  }
+}
 class App extends Component {
   constructor() {
     super();
-    this.state = {
-      input: '',
-      imageURL: '',
-      faceBox: {},
-      route: 'signin',
-      isSignedIn: false,
-      user: {
-        id: '',
-        name: '',
-        email: '',
-        entries: 0,
-        joined: ''
-      }
-    }
+    this.state = initialState;
   }
 
-  // We used this block to test the initial connection between frontend and backend
-  // componentDidMount() {
-  //   fetch('http://localhost:8080')
-  //     .then(res => res.json())
-  //     .then(console.log);
-  // }
   loadUser = (data) => {
     this.setState({
       user: {
@@ -84,11 +75,18 @@ class App extends Component {
   }
 
   onDetectImage = () => {
-    this.setState({imageURL: this.state.input})
+    this.setState({imageURL: this.state.input});//Save the image url to current state
     //Note that below we use this.state.input instead of this.state.imageURL because setState is asynchronous and therefore there is a delay when updating state (input was updated in a separate function so it is ok)
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
+    fetch('http://localhost:8080/imageurl', { //send the image url to the backend for API processing
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+          input: this.state.input
+      })
+    })
+      .then(response => response.json())
       .then(response => {
-        if (response) {
+        if (response) { //If there is a response increment the entries field on the backend
           fetch('http://localhost:8080/image', {
             method: 'put',
             headers: {'Content-Type': 'application/json'},
@@ -97,10 +95,11 @@ class App extends Component {
             })
           })
           .then(res => res.json())
-          .then(count => {
+          .then(count => { //If backend successfully updates, increment the entries field on the front end
             //Below we use 'Object.assign' to update just the entries field of the user (if we just did { user: { entries: count }} we would overwrite the entire object
             this.setState(Object.assign(this.state.user, { entries: count }))
           })
+          .catch(err => console.log(err));
       }
         this.displayFaceBox(this.calcFaceBox(response.outputs[0].data.regions[0].region_info.bounding_box));
       })
@@ -109,7 +108,7 @@ class App extends Component {
 
   onRouteChange = (route) => {
     if (route === 'signout') {
-      this.setState({isSignedIn: false, route: 'home'});
+      return this.setState(initialState);
     } else if (route === 'home') {
       this.setState({isSignedIn: true})
     }
