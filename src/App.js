@@ -25,7 +25,7 @@ const particlesOptions = {
 const initialState = {
   input: '',
   imageURL: '',
-  faceBox: {},
+  faceBoxes: [],
   route: 'signin',
   isSignedIn: false,
   user: {
@@ -54,6 +54,17 @@ class App extends Component {
     });
   }
 
+  processFaceDetection = (boxRegions) => {
+    for (let region of boxRegions) {
+      const { bounding_box } = region.region_info
+      this.displayFaceBox(this.calcFaceBox(bounding_box));
+    }
+  }
+
+  displayFaceBox = (calcBox) => {
+    this.setState((state, props) => ({ faceBoxes: [...state.faceBoxes, {...calcBox}] }));
+  }
+// {bottom_row, left_col, right_col, top_row}
   calcFaceBox = ({bottom_row, left_col, right_col, top_row}) => {
     const image = document.getElementById('inputImage');
     const width = Number(image.width);
@@ -66,16 +77,12 @@ class App extends Component {
     }
   }
 
-  displayFaceBox = (calcBox) => {
-    this.setState({faceBox: calcBox});
-  }
-
   onInputChange = (event) => {
     this.setState({input: event.target.value});
   }
 
   onDetectImage = () => {
-    this.setState({imageURL: this.state.input});//Save the image url to current state
+    this.setState({imageURL: this.state.input, faceBoxes: [] });
     //Note that below we use this.state.input instead of this.state.imageURL because setState is asynchronous and therefore there is a delay when updating state (input was updated in a separate function so it is ok)
     fetch('http://localhost:8080/imageurl', { //send the image url to the backend for API processing
       method: 'post',
@@ -100,8 +107,8 @@ class App extends Component {
             this.setState(Object.assign(this.state.user, { entries: count }))
           })
           .catch(err => console.log(err));
-      }
-        this.displayFaceBox(this.calcFaceBox(response.outputs[0].data.regions[0].region_info.bounding_box));
+          this.processFaceDetection(response.outputs[0].data.regions);
+        }
       })
       .catch(err => console.log(err));
   }
@@ -116,17 +123,18 @@ class App extends Component {
   }
 
   render() {
-    const {isSignedIn, imageURL, faceBox, route} = this.state;
+    const {isSignedIn, imageURL, faceBoxes, route} = this.state;
     return (
       <div className="App">
         <Particles params={particlesOptions} className='particles' />
         <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange} />
-        { route === 'home' ?
+        { 
+          route === 'home' ?
           <div>
             <Logo />
             <Rank name={this.state.user.name} entries={this.state.user.entries} />
+            <FaceRecognition imageURL={imageURL} faceBoxes={faceBoxes} />
             <ImageLinkForm onInputChange={this.onInputChange} onDetectImage={this.onDetectImage} />
-            <FaceRecognition imageURL={imageURL} faceBox={faceBox} />
           </div>
           : route === 'signin' ?
             <SignIn onRouteChange={this.onRouteChange} loadUser={this.loadUser} /> 

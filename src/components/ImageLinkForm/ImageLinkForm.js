@@ -3,7 +3,7 @@ import './ImageLinkForm.css';
 
 const ImageLinkForm = ({ onInputChange, onDetectImage }) => {
     return (
-        <div>
+        <div className='pb4'>
             <p className='f3'>
                 {`Upload an image URL and behold the power of technology!`}
             </p>
