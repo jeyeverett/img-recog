@@ -136,6 +136,7 @@ class App extends Component {
       },
       body: JSON.stringify({
         input: this.state.input,
+        id: this.state.user.id,
       }),
     })
       .then((response) => response.json())
@@ -213,7 +214,6 @@ class App extends Component {
         )}
         {route === 'home' ? (
           <div>
-            <Logo />
             <Rank
               name={this.state.user.name}
               entries={this.state.user.entries}
