@@ -22,13 +22,13 @@ const Navigation = ({ onRouteChange, isSignedIn, toggleModal, isLoading }) => {
       >
         <p
           onClick={() => onRouteChange('signin')}
-          className="f4 link dim black underline ph4 pointer"
+          className="f4 link dim grey ph4 pointer"
         >
           Sign In
         </p>
         <p
           onClick={() => onRouteChange('register')}
-          className="f4 link dim black underline pr4 pointer"
+          className="f4 link dim grey pr4 pointer"
         >
           Register
         </p>

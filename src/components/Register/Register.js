@@ -20,13 +20,17 @@ class Register extends React.Component {
   };
   onSubmitReg = (event) => {
     event.preventDefault();
+    const { name, email, password } = this.state;
+    if (!name || !email || !password) {
+      return;
+    }
     fetch('http://localhost:8080/register', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: this.state.name,
-        email: this.state.email,
-        password: this.state.password,
+        name,
+        email,
+        password,
       }),
     })
       .then((res) => res.json())
@@ -50,7 +54,7 @@ class Register extends React.Component {
                   Name
                 </label>
                 <input
-                  className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                  className="pa2 input-reset ba bg-transparent w-100"
                   type="text"
                   name="name"
                   id="name"
@@ -62,7 +66,7 @@ class Register extends React.Component {
                   Email
                 </label>
                 <input
-                  className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                  className="pa2 input-reset ba bg-transparent w-100"
                   type="email"
                   name="email-address"
                   id="email-address"
@@ -74,7 +78,7 @@ class Register extends React.Component {
                   Password
                 </label>
                 <input
-                  className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                  className="b pa2 input-reset ba bg-transparent w-100"
                   type="password"
                   name="password"
                   id="password"
@@ -89,6 +93,15 @@ class Register extends React.Component {
                 type="submit"
                 value="Register"
               />
+            </div>
+            <div className="lh-copy mt3">
+              <p
+                href="#0"
+                className="f6 link dim black db pointer"
+                onClick={() => this.props.onRouteChange('signin')}
+              >
+                Sign in
+              </p>
             </div>
           </div>
         </main>

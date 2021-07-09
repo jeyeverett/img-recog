@@ -4,7 +4,6 @@ import './App.css';
 import Navigation from './components/Navigation/Navigation';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
-import Logo from './components/Logo/Logo';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
 import Rank from './components/Rank/Rank';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
@@ -167,8 +166,26 @@ class App extends Component {
   };
 
   onRouteChange = (route) => {
+    const token = window.sessionStorage.getItem('token');
     if (route === 'signout') {
-      return this.setState(initialState);
+      console.log('signing out');
+      console.log(this.state.user.id);
+      fetch('http://localhost:8080/signout', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          id: this.state.user.id,
+        }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          console.log('Supposed to be changing state here');
+          this.setState(initialState);
+        })
+        .catch((err) => console.log('Error signing out'));
     } else if (route === 'home') {
       this.setState({ isSignedIn: true });
     }
