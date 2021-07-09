@@ -125,11 +125,15 @@ class App extends Component {
 
   onDetectImage = () => {
     this.setState({ imageURL: this.state.input, faceBoxes: [] });
+    const token = window.sessionStorage.getItem('token');
     //Note that below we use this.state.input instead of this.state.imageURL because setState is asynchronous and therefore there is a delay when updating state (input was updated in a separate function so it is ok)
     fetch('http://localhost:8080/imageurl', {
       //send the image url to the backend for API processing
       method: 'post',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
       body: JSON.stringify({
         input: this.state.input,
       }),
@@ -140,7 +144,10 @@ class App extends Component {
           //If there is a response increment the entries field on the backend
           fetch('http://localhost:8080/image', {
             method: 'put',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
             body: JSON.stringify({
               id: this.state.user.id,
             }),
@@ -155,7 +162,7 @@ class App extends Component {
           this.processFaceDetection(response.outputs[0].data.regions);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log('Face detection error.'));
   };
 
   onRouteChange = (route) => {

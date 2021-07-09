@@ -21,6 +21,10 @@
   right: -30px;
 }
 
+h1 {
+  font-family: 'Courier New';
+}
+
 .exit-profile:hover {
   opacity: 0.5;
 }

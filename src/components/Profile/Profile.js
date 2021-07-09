@@ -20,7 +20,10 @@ class Profile extends React.Component {
   updateUser = (data) => {
     fetch(`http://localhost:8080/profile/${this.props.user.id}`, {
       method: 'put',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + window.sessionStorage.getItem('token'),
+      },
       body: JSON.stringify({
         name: data.name,
         bio: data.bio,
