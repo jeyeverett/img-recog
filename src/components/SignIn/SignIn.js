@@ -1,5 +1,6 @@
 import React from 'react';
 
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 class SignIn extends React.Component {
   constructor(props) {
     super(props);
@@ -8,12 +9,18 @@ class SignIn extends React.Component {
       signInPassword: '',
     };
   }
+
   onEmailChange = (event) => {
     this.setState({ signInEmail: event.target.value });
   };
   onPasswordChange = (event) => {
     this.setState({ signInPassword: event.target.value });
   };
+
+  saveAuthTokenInSession = (token) => {
+    window.sessionStorage.setItem('token', token);
+  };
+
   onSubmitSignIn = () => {
     fetch('http://localhost:8080/signin', {
       method: 'post',
@@ -24,16 +31,32 @@ class SignIn extends React.Component {
       }),
     })
       .then((res) => res.json())
+      .then((data) => {
+        if (data.userId && data.success === 'true') {
+          this.saveAuthTokenInSession(data.token);
+          return fetch(`http://localhost:8080/profile/${data.userId}`, {
+            method: 'get',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + data.token,
+            },
+          });
+        }
+      })
+      .then((res) => res.json())
       .then((user) => {
-        if (user.id) {
+        if (user && user.email) {
           this.props.loadUser(user);
           this.props.onRouteChange('home');
         }
-      });
+      })
+      .catch((err) => console.log('Invalid username or password.'));
   };
   render() {
-    const { onRouteChange } = this.props;
-    return (
+    const { onRouteChange, isLoading } = this.props;
+    return isLoading ? (
+      <LoadingSpinner />
+    ) : (
       <article className="br2 ba b--black-20 mv4 w-100 w-50-m w-25-l mw6 center shadow-5">
         <main className="pa4 black-80">
           <div className="measure">

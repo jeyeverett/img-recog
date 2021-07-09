@@ -12,12 +12,32 @@ class Profile extends React.Component {
   onNameChange = (event) => {
     this.setState({ name: event.target.value });
   };
+
   onBioChange = (event) => {
     this.setState({ bio: event.target.value });
   };
 
+  updateUser = (data) => {
+    fetch(`http://localhost:8080/profile/${this.props.user.id}`, {
+      method: 'put',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        bio: data.bio,
+      }),
+    })
+      .then((res) => res.json())
+      .then((user) => {
+        if (user.id) {
+          this.props.loadUser(user);
+          this.props.toggleModal();
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
   render() {
-    const { toggleModal, user, updateUser } = this.props;
+    const { toggleModal, user } = this.props;
     return (
       <div className="profile-modal">
         <article className="br2 ba b--black-20 mv4 w-100 w-50-m w-25-l mw6 center bg-light shadow-5 h-5">
@@ -55,7 +75,7 @@ class Profile extends React.Component {
               Bio
             </label>
             <textarea
-              className="pa2 ba w-100 h4 f6"
+              className="pa2 ba w-100 h4 f6 style-4"
               type="text"
               name="bio"
               id="bio"
@@ -69,7 +89,7 @@ class Profile extends React.Component {
                 style={{
                   backgroundColor: 'rgba(255,255,255,.5)',
                 }}
-                onClick={() => updateUser({ ...this.state })}
+                onClick={() => this.updateUser({ ...this.state })}
               >
                 Save
               </button>

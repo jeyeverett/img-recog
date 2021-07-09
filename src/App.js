@@ -31,6 +31,7 @@ const initialState = {
   route: 'signin',
   isSignedIn: false,
   isProfileOpen: false,
+  isLoading: false,
   user: {
     id: '',
     name: '',
@@ -45,6 +46,39 @@ class App extends Component {
     super();
     this.state = initialState;
   }
+  componentDidMount() {
+    const token = window.sessionStorage.getItem('token');
+    if (token) {
+      this.setState({ isLoading: true });
+      fetch('http://localhost:8080/signin', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.id) {
+            return fetch(`http://localhost:8080/profile/${data.id}`, {
+              method: 'get',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+            });
+          }
+        })
+        .then((res) => res.json())
+        .then((user) => {
+          if (user && user.email) {
+            this.loadUser(user);
+            this.onRouteChange('home');
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  }
 
   loadUser = (data) => {
     this.setState({
@@ -56,25 +90,8 @@ class App extends Component {
         joined: data.joined,
         bio: data.bio,
       },
+      isLoading: false,
     });
-  };
-
-  updateUser = (data) => {
-    fetch(`http://localhost:8080/profile/${this.state.user.id}`, {
-      method: 'put',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: data.name,
-        bio: data.bio,
-      }),
-    })
-      .then((res) => res.json())
-      .then((user) => {
-        if (user.id) {
-          this.loadUser(user);
-          // this.props.onRouteChange('home');
-        }
-      });
   };
 
   processFaceDetection = (boxRegions) => {
@@ -158,8 +175,16 @@ class App extends Component {
   };
 
   render() {
-    const { isSignedIn, imageURL, faceBoxes, route, isProfileOpen, user } =
-      this.state;
+    const {
+      isSignedIn,
+      imageURL,
+      faceBoxes,
+      route,
+      isProfileOpen,
+      user,
+      isLoading,
+    } = this.state;
+
     return (
       <div className="App">
         <Particles params={particlesOptions} className="particles" />
@@ -167,6 +192,7 @@ class App extends Component {
           isSignedIn={isSignedIn}
           onRouteChange={this.onRouteChange}
           toggleModal={this.toggleModal}
+          isLoading={isLoading}
         />
         {isProfileOpen && (
           <Modal>
@@ -174,7 +200,7 @@ class App extends Component {
               isProfileOpen={isProfileOpen}
               toggleModal={this.toggleModal}
               user={user}
-              updateUser={this.updateUser}
+              loadUser={this.loadUser}
             />
           </Modal>
         )}
@@ -192,7 +218,11 @@ class App extends Component {
             />
           </div>
         ) : route === 'signin' ? (
-          <SignIn onRouteChange={this.onRouteChange} loadUser={this.loadUser} />
+          <SignIn
+            onRouteChange={this.onRouteChange}
+            loadUser={this.loadUser}
+            isLoading={isLoading}
+          />
         ) : (
           <Register
             onRouteChange={this.onRouteChange}
