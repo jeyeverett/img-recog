@@ -54,8 +54,27 @@ class App extends Component {
         email: data.email,
         entries: data.entries,
         joined: data.joined,
+        bio: data.bio,
       },
     });
+  };
+
+  updateUser = (data) => {
+    fetch(`http://localhost:8080/profile/${this.state.user.id}`, {
+      method: 'put',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        bio: data.bio,
+      }),
+    })
+      .then((res) => res.json())
+      .then((user) => {
+        if (user.id) {
+          this.loadUser(user);
+          // this.props.onRouteChange('home');
+        }
+      });
   };
 
   processFaceDetection = (boxRegions) => {
@@ -155,6 +174,7 @@ class App extends Component {
               isProfileOpen={isProfileOpen}
               toggleModal={this.toggleModal}
               user={user}
+              updateUser={this.updateUser}
             />
           </Modal>
         )}
