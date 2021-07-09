@@ -37,6 +37,7 @@ const initialState = {
     email: '',
     entries: 0,
     joined: '',
+    bio: '',
   },
 };
 class App extends Component {
@@ -138,7 +139,7 @@ class App extends Component {
   };
 
   render() {
-    const { isSignedIn, imageURL, faceBoxes, route, isProfileOpen } =
+    const { isSignedIn, imageURL, faceBoxes, route, isProfileOpen, user } =
       this.state;
     return (
       <div className="App">
@@ -153,6 +154,7 @@ class App extends Component {
             <Profile
               isProfileOpen={isProfileOpen}
               toggleModal={this.toggleModal}
+              user={user}
             />
           </Modal>
         )}
