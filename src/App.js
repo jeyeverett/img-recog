@@ -47,6 +47,7 @@ class App extends Component {
   }
   componentDidMount() {
     const token = window.sessionStorage.getItem('token');
+    console.log(token);
     if (token) {
       this.setState({ isLoading: true });
       fetch('http://localhost:8080/signin', {
@@ -138,9 +139,9 @@ class App extends Component {
         id: this.state.user.id,
       }),
     })
-      .then((response) => response.json())
-      .then((response) => {
-        if (response) {
+      .then((res) => res.json())
+      .then((res) => {
+        if (res) {
           //If there is a response increment the entries field on the backend
           fetch('http://localhost:8080/image', {
             method: 'put',
@@ -159,7 +160,7 @@ class App extends Component {
               this.setState(Object.assign(this.state.user, { entries: count }));
             })
             .catch((err) => console.log(err));
-          this.processFaceDetection(response.outputs[0].data.regions);
+          this.processFaceDetection(res.outputs[0].data.regions);
         }
       })
       .catch((err) => console.log('Face detection error.'));
@@ -168,8 +169,6 @@ class App extends Component {
   onRouteChange = (route) => {
     const token = window.sessionStorage.getItem('token');
     if (route === 'signout') {
-      console.log('signing out');
-      console.log(this.state.user.id);
       fetch('http://localhost:8080/signout', {
         method: 'post',
         headers: {
@@ -180,10 +179,9 @@ class App extends Component {
           id: this.state.user.id,
         }),
       })
-        .then((res) => res.json())
         .then(() => {
-          console.log('Supposed to be changing state here');
           this.setState(initialState);
+          window.sessionStorage.removeItem('token');
         })
         .catch((err) => console.log('Error signing out'));
     } else if (route === 'home') {
